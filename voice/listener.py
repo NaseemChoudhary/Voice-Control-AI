@@ -1,11 +1,11 @@
+import logging
 import speech_recognition as sr
-import time
 
 recognizer = sr.Recognizer()
 
-# Your microphone:
-# card 0, device 0 -> CX20724 Analog
-MICROPHONE_INDEX = 0
+from config import MICROPHONE_INDEX
+
+logger = logging.getLogger(__name__)
 
 
 def setup_microphone():
@@ -14,16 +14,16 @@ def setup_microphone():
     try:
         mic = sr.Microphone(device_index=MICROPHONE_INDEX)
 
-        print("Initializing microphone...")
+        logger.info("Initializing microphone")
 
         with mic as source:
-            print("Calibrating microphone...")
+            logger.info("Calibrating microphone")
             recognizer.adjust_for_ambient_noise(
                 source,
                 duration=1
             )
 
-        print("Microphone ready.")
+        logger.info("Microphone ready")
 
         # Prevent Jarvis from waiting too long for speech
         recognizer.energy_threshold = 300
@@ -32,8 +32,8 @@ def setup_microphone():
 
         return mic
 
-    except Exception as e:
-        print("Microphone initialization error:", e)
+    except Exception:
+        logger.exception("Microphone initialization failed")
         return None
 
 
@@ -42,7 +42,7 @@ def listen(mic, timeout=15, phrase_time_limit=5):
 
     try:
         with mic as source:
-            print("Listening...")
+            logger.debug("Listening for speech")
 
             audio = recognizer.listen(
                 source,
@@ -50,29 +50,26 @@ def listen(mic, timeout=15, phrase_time_limit=5):
                 phrase_time_limit=phrase_time_limit
             )
 
-        print("Recognizing...")
+        logger.debug("Recognizing speech")
 
         text = recognizer.recognize_google(
             audio,
             language="en-IN"
         )
 
-        print("You:", text)
+        logger.info("Recognized user speech")
 
         return text.lower()
 
     except sr.WaitTimeoutError:
-        print("No speech detected.")
+        logger.debug("No speech detected before timeout")
         return None
-
     except sr.UnknownValueError:
-        print("Sorry, I couldn't understand.")
+        logger.info("Speech could not be understood")
         return None
-
-    except sr.RequestError as e:
-        print("Google Speech Recognition error:", e)
+    except sr.RequestError:
+        logger.exception("Speech recognition service request failed")
         return None
-
-    except Exception as e:
-        print("Speech error:", e)
+    except Exception:
+        logger.exception("Unexpected speech recognition failure")
         return None

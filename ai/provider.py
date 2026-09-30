@@ -1,50 +1,62 @@
-import os
 import json
-from dotenv import load_dotenv
-
-load_dotenv()
+import logging
 
 from google import genai
 from groq import Groq
 
-HISTORY_FILE = "data/chat_history.json"
+from config import (
+    GEMINI_API_KEY, GEMINI_MODEL, GROQ_API_KEY, GROQ_MODEL, HISTORY_FILE,
+)
 
-gemini_key = os.getenv("GEMINI_API_KEY")
-groq_key = os.getenv("GROQ_API_KEY")
-
-gemini_client = genai.Client(api_key=gemini_key) if gemini_key else None
-groq_client = Groq(api_key=groq_key) if groq_key else None
+logger = logging.getLogger(__name__)
+gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 
 def load_history():
     """Load conversation history from JSON file."""
-    if os.path.exists(HISTORY_FILE):
-        try:
-            with open(HISTORY_FILE, "r") as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return []
+    try:
+        with HISTORY_FILE.open("r", encoding="utf-8") as history_file:
+            history = json.load(history_file)
+        if not isinstance(history, list):
+            raise ValueError("Conversation history must be a JSON list")
+        return [
+            item for item in history
+            if isinstance(item, dict)
+            and item.get("role") in ("user", "assistant")
+            and isinstance(item.get("content"), str)
+        ]
+    except FileNotFoundError:
+        return []
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        logger.warning("Could not load conversation history: %s", exc)
+        return []
 
 
 def save_history(history):
     """Save conversation history to JSON file."""
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(history, f, indent=4)
+    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with HISTORY_FILE.open("w", encoding="utf-8") as history_file:
+        json.dump(history, history_file, indent=4)
 
 
 def new_chat():
     """Clear the conversation history."""
-    if os.path.exists(HISTORY_FILE):
-        os.remove(HISTORY_FILE)
+    try:
+        HISTORY_FILE.unlink()
+    except FileNotFoundError:
+        pass
+    except OSError:
+        logger.exception("Could not clear conversation history")
+        raise
 
 
 def _call_gemini(messages, system_instruction):
     """Call Gemini with the same conversation turns used by Groq."""
     if not gemini_client:
-        raise ValueError("GEMINI_API_KEY is missing from .env")
+        raise RuntimeError("Gemini is not configured: GEMINI_API_KEY is missing")
     response = gemini_client.models.generate_content(
-        model="gemini-3.5-flash",
+        model=GEMINI_MODEL,
         contents=[
             {
                 "role": "model" if message["role"] == "assistant" else "user",
@@ -61,15 +73,15 @@ def _call_gemini(messages, system_instruction):
 def _call_groq(messages):
     """Call Groq model as fallback."""
     if not groq_client:
-        raise ValueError("GROQ_API_KEY is missing from .env")
+        raise RuntimeError("Groq is not configured: GROQ_API_KEY is missing")
     response = groq_client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=GROQ_MODEL,
         messages=messages
     )
     return response.choices[0].message.content
 
 
-def ask_ai(prompt: str, history=None, debug: bool = False):
+def ask_ai(prompt: str, history=None):
     """Ask AI a question, with Gemini primary and Groq fallback."""
     if history is None:
         history = load_history()
@@ -90,17 +102,19 @@ def ask_ai(prompt: str, history=None, debug: bool = False):
     # Try Gemini First
     try:
         response_text = _call_gemini(messages, system_instruction)
-    except Exception as e:
-        if debug:
-            print(f"[AI Debug] Gemini failed: {e}")
+        if not response_text:
+            raise RuntimeError("Gemini returned an empty response")
+    except Exception:
+        logger.exception("Gemini request failed; trying Groq fallback")
 
     # Fallback to Groq if Gemini fails
     if not response_text:
         try:
             response_text = _call_groq(messages)
-        except Exception as e:
-            if debug:
-                print(f"[AI Debug] Groq failed: {e}")
+            if not response_text:
+                raise RuntimeError("Groq returned an empty response")
+        except Exception:
+            logger.exception("Groq request failed")
 
     if not response_text:
         return "Sorry, all AI services are currently unavailable."
@@ -108,6 +122,9 @@ def ask_ai(prompt: str, history=None, debug: bool = False):
     # Save state
     history.append({"role": "user", "content": prompt})
     history.append({"role": "assistant", "content": response_text})
-    save_history(history)
+    try:
+        save_history(history)
+    except OSError:
+        logger.exception("Could not persist conversation history")
 
     return response_text

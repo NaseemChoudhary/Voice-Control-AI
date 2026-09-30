@@ -1,11 +1,17 @@
+import logging
 import time
+
+from config import configure_logging
 from commands.system import open_text_terminal
 from voice.listener import setup_microphone, listen
 from assistant.router import route_command
 from voice.speaker import speak
 
+logger = logging.getLogger(__name__)
+
 
 def main():
+    configure_logging()
     print("==============================")
     print("       JARVIS STARTING")
     print("==============================")
@@ -18,8 +24,8 @@ def main():
     # Start Text Mode
     try:
         open_text_terminal()
-    except Exception as e:
-        print("Could not open text terminal:", e)
+    except Exception:
+        logger.exception("Could not open text terminal")
 
     # Initialize microphone ONCE
     microphone = setup_microphone()
@@ -88,8 +94,11 @@ def main():
                         running = False
                         break
 
-                except Exception as e:
-                    print("Command error:", e)
+                except Exception:
+                    logger.exception("Command handling failed")
+                    message = "Sorry, I couldn't complete that command."
+                    print(message)
+                    speak(message)
 
             # User only said "Jarvis"
             else:
@@ -113,8 +122,11 @@ def main():
                             running = False
                             break
 
-                    except Exception as e:
-                        print("Command error:", e)
+                    except Exception:
+                        logger.exception("Command handling failed")
+                        message = "Sorry, I couldn't complete that command."
+                        print(message)
+                        speak(message)
 
         else:
 

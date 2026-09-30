@@ -1,15 +1,12 @@
-import os
+import logging
 import re
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
+from config import DEFAULT_CITY, WEATHER_API_KEY, WEATHER_API_URL
 
-API_KEY = os.getenv("WEATHER_API_KEY")
-
-DEFAULT_CITY = "Thane"
-
-URL = "http://api.weatherapi.com/v1/forecast.json"
+logger = logging.getLogger(__name__)
+API_KEY = WEATHER_API_KEY
+URL = WEATHER_API_URL
 
 
 def extract_city(command):
@@ -40,6 +37,7 @@ def extract_city(command):
 def get_weather(command):
     """Fetch and announce weather for the given command."""
     if not API_KEY:
+        logger.error("Weather lookup requested but WEATHER_API_KEY is not configured")
         return "Weather API key is missing."
 
     city = extract_city(command)
@@ -54,11 +52,12 @@ def get_weather(command):
 
     try:
         response = requests.get(URL, params=params, timeout=10)
+        response.raise_for_status()
         data = response.json()
 
-        if "error" in data:
-            msg = f"Sorry, I couldn't find weather information for {city}."
-            return msg
+        if not isinstance(data, dict) or "error" in data:
+            logger.info("Weather service returned no result for city %s", city)
+            return f"Sorry, I couldn't find weather information for {city}."
 
         location = data["location"]
         current = data["current"]
@@ -94,5 +93,6 @@ def get_weather(command):
 
         return message
 
-    except Exception as e:
+    except (requests.RequestException, ValueError, KeyError, IndexError, TypeError):
+        logger.exception("Could not fetch or parse weather for %s", city)
         return "Sorry, I couldn't fetch the weather right now."

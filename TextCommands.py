@@ -1,5 +1,8 @@
+import logging
 import os
 import subprocess
+
+from config import configure_logging
 
 
 def open_text_terminal():
@@ -42,8 +45,10 @@ def text_command_loop():
                 break
             if not handled:
                 print("Command was not handled.")
-        except Exception as e:
-            print("Command error:", e)
+        except Exception:
+            logging.getLogger(__name__).exception("Text command handling failed")
+            print("Sorry, I couldn't complete that command.")
 
 if __name__ == "__main__":
+    configure_logging()
     text_command_loop()
