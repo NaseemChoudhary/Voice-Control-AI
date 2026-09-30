@@ -1,0 +1,10 @@
+# Ignore the virtual environment directory
+.venv/
+.env
+chat_history.json
+__pycache__/
+*.pyc
+# Editor settings
+.vscode/
+.idea/
+.claude/

@@ -1,0 +1,1 @@
+"""Assistant package - core assistant logic."""
