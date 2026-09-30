@@ -1,9 +1,10 @@
 import logging
 import speech_recognition as sr
 
+import config
+
 recognizer = sr.Recognizer()
 
-from config import MICROPHONE_INDEX
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ def setup_microphone():
     """Initialize and calibrate the microphone once."""
 
     try:
-        mic = sr.Microphone(device_index=MICROPHONE_INDEX)
+        mic = sr.Microphone(device_index=config.MICROPHONE_INDEX)
 
         logger.info("Initializing microphone")
 

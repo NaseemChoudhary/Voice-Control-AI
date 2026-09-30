@@ -5,7 +5,7 @@ A simple yet powerful voice assistant built in Python, inspired by Iron Man's J.
 ## Features
 
 - **Voice-activated:** Listens for the wake word "Jarvis" to start taking commands.
-- **Dual-Mode Interaction:** Supports both voice commands and a separate text-based terminal for input.
+- **Dual-mode interface:** Use the desktop dashboard or the terminal CLI with the same conversation and activity history.
 - **Web Browsing:** Opens Google and performs web searches.
 - **YouTube Integration:** Plays videos or music on YouTube.
 - **News Headlines:** Fetches and reads the latest news headlines from BBC News.
@@ -87,7 +87,19 @@ Run the main script to start the assistant:
 python main.py
 ```
 
-The assistant will initialize and start listening for the wake word "Jarvis". Once it hears the wake word, it will listen for your command.
+To use the terminal interface instead, run:
+
+```bash
+python main.py --cli
+```
+
+The legacy text launcher is also kept available with `python TextCommands.py`.
+
+The desktop dashboard opens with live conversation and service status. Use the command box for text input, or select **Start voice** and say “Jarvis” followed by your command.
+
+### Dashboard settings
+
+The Settings page lets you select model names, default weather city, microphone index, speech rate, speech volume, and spoken response output. API keys remain in `.env`. Dashboard activity is stored under `data/`.
 
 ### Example Commands
 

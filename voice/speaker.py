@@ -2,7 +2,7 @@
 
 import logging
 
-from config import SPEECH_ENGINE, SPEECH_RATE, SPEECH_VOLUME
+import config
 
 logger = logging.getLogger(__name__)
 _engine = None
@@ -15,9 +15,9 @@ def speak(text):
         import pyttsx3
 
         if _engine is None:
-            _engine = pyttsx3.init(SPEECH_ENGINE)
-            _engine.setProperty("rate", SPEECH_RATE)
-            _engine.setProperty("volume", SPEECH_VOLUME)
+            _engine = pyttsx3.init(config.SPEECH_ENGINE)
+        _engine.setProperty("rate", config.SPEECH_RATE)
+        _engine.setProperty("volume", config.SPEECH_VOLUME)
         _engine.say(str(text))
         _engine.runAndWait()
     except Exception:

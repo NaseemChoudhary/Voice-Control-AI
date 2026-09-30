@@ -1,22 +1,21 @@
 import json
 import logging
 
+import config
+
 from google import genai
 from groq import Groq
 
-from config import (
-    GEMINI_API_KEY, GEMINI_MODEL, GROQ_API_KEY, GROQ_MODEL, HISTORY_FILE,
-)
 
 logger = logging.getLogger(__name__)
-gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
-groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+gemini_client = genai.Client(api_key=config.GEMINI_API_KEY) if config.GEMINI_API_KEY else None
+groq_client = Groq(api_key=config.GROQ_API_KEY) if config.GROQ_API_KEY else None
 
 
 def load_history():
     """Load conversation history from JSON file."""
     try:
-        with HISTORY_FILE.open("r", encoding="utf-8") as history_file:
+        with config.HISTORY_FILE.open("r", encoding="utf-8") as history_file:
             history = json.load(history_file)
         if not isinstance(history, list):
             raise ValueError("Conversation history must be a JSON list")
@@ -35,15 +34,15 @@ def load_history():
 
 def save_history(history):
     """Save conversation history to JSON file."""
-    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with HISTORY_FILE.open("w", encoding="utf-8") as history_file:
+    config.HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with config.HISTORY_FILE.open("w", encoding="utf-8") as history_file:
         json.dump(history, history_file, indent=4)
 
 
 def new_chat():
     """Clear the conversation history."""
     try:
-        HISTORY_FILE.unlink()
+        config.HISTORY_FILE.unlink()
     except FileNotFoundError:
         pass
     except OSError:
@@ -56,7 +55,7 @@ def _call_gemini(messages, system_instruction):
     if not gemini_client:
         raise RuntimeError("Gemini is not configured: GEMINI_API_KEY is missing")
     response = gemini_client.models.generate_content(
-        model=GEMINI_MODEL,
+        model=config.GEMINI_MODEL,
         contents=[
             {
                 "role": "model" if message["role"] == "assistant" else "user",
@@ -75,7 +74,7 @@ def _call_groq(messages):
     if not groq_client:
         raise RuntimeError("Groq is not configured: GROQ_API_KEY is missing")
     response = groq_client.chat.completions.create(
-        model=GROQ_MODEL,
+        model=config.GROQ_MODEL,
         messages=messages
     )
     return response.choices[0].message.content

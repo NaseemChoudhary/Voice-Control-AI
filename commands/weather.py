@@ -2,11 +2,9 @@ import logging
 import re
 import requests
 
-from config import DEFAULT_CITY, WEATHER_API_KEY, WEATHER_API_URL
+import config
 
 logger = logging.getLogger(__name__)
-API_KEY = WEATHER_API_KEY
-URL = WEATHER_API_URL
 
 
 def extract_city(command):
@@ -31,19 +29,19 @@ def extract_city(command):
             city = city.strip()
             return city.title()
 
-    return DEFAULT_CITY
+    return config.DEFAULT_CITY
 
 
 def get_weather(command):
     """Fetch and announce weather for the given command."""
-    if not API_KEY:
+    if not config.WEATHER_API_KEY:
         logger.error("Weather lookup requested but WEATHER_API_KEY is not configured")
         return "Weather API key is missing."
 
     city = extract_city(command)
 
     params = {
-        "key": API_KEY,
+        "key": config.WEATHER_API_KEY,
         "q": city,
         "days": 1,
         "aqi": "no",
@@ -51,7 +49,7 @@ def get_weather(command):
     }
 
     try:
-        response = requests.get(URL, params=params, timeout=10)
+        response = requests.get(config.WEATHER_API_URL, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
 
