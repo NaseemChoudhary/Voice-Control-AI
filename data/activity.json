@@ -4,5 +4,47 @@
     "kind": "voice",
     "command": "open google",
     "result": "Opening Google."
+  },
+  {
+    "time": "2026-10-01T00:16:34+05:30",
+    "kind": "dashboard",
+    "command": "latest news",
+    "result": "Here are today's top headlines. Headline 1: 'We removed him from the cockpit': People speak about what happened Headline 2: UK believes Iran involved in RAF Fairford incident, PM says Headline 3: UK-France 'one in, one out' migrant scheme scrapped"
+  },
+  {
+    "time": "2026-10-01T00:18:44+05:30",
+    "kind": "dashboard",
+    "command": "weather",
+    "result": "Sorry, I couldn't fetch the weather right now."
+  },
+  {
+    "time": "2026-10-01T00:18:49+05:30",
+    "kind": "dashboard",
+    "command": "search",
+    "result": "Searching for search."
+  },
+  {
+    "time": "2026-10-01T00:43:27+05:30",
+    "kind": "voice",
+    "command": "open google",
+    "result": "Opening Google."
+  },
+  {
+    "time": "2026-10-01T00:44:01+05:30",
+    "kind": "voice",
+    "command": "tell me the time",
+    "result": "Sorry, all AI services are currently unavailable."
+  },
+  {
+    "time": "2026-10-01T01:11:32+05:30",
+    "kind": "dashboard",
+    "command": "weather",
+    "result": "Sorry, I couldn't fetch the weather right now."
+  },
+  {
+    "time": "2026-10-01T01:11:58+05:30",
+    "kind": "voice",
+    "command": "lesan",
+    "result": "Sorry, all AI services are currently unavailable."
   }
 ]

@@ -8,6 +8,11 @@ from groq import Groq
 
 
 logger = logging.getLogger(__name__)
+GEMINI_STATUS = "Not tested" if config.GEMINI_API_KEY else "No API key"
+GROQ_STATUS = "Not tested" if config.GROQ_API_KEY else "No API key"
+NETWORK_STATUS = "Not tested"
+ACTIVE_PROVIDER = None
+
 gemini_client = genai.Client(api_key=config.GEMINI_API_KEY) if config.GEMINI_API_KEY else None
 groq_client = Groq(api_key=config.GROQ_API_KEY) if config.GROQ_API_KEY else None
 
@@ -82,6 +87,8 @@ def _call_groq(messages):
 
 def ask_ai(prompt: str, history=None):
     """Ask AI a question, with Gemini primary and Groq fallback."""
+    global GEMINI_STATUS, GROQ_STATUS, NETWORK_STATUS, ACTIVE_PROVIDER
+    ACTIVE_PROVIDER = None
     if history is None:
         history = load_history()
 
@@ -103,7 +110,11 @@ def ask_ai(prompt: str, history=None):
         response_text = _call_gemini(messages, system_instruction)
         if not response_text:
             raise RuntimeError("Gemini returned an empty response")
+        GEMINI_STATUS = "Online"
+        NETWORK_STATUS = "Connected"
+        ACTIVE_PROVIDER = "Gemini"
     except Exception:
+        GEMINI_STATUS = "Unavailable" if config.GEMINI_API_KEY else "No API key"
         logger.exception("Gemini request failed; trying Groq fallback")
 
     # Fallback to Groq if Gemini fails
@@ -112,7 +123,11 @@ def ask_ai(prompt: str, history=None):
             response_text = _call_groq(messages)
             if not response_text:
                 raise RuntimeError("Groq returned an empty response")
+            GROQ_STATUS = "Online"
+            NETWORK_STATUS = "Connected"
+            ACTIVE_PROVIDER = "Groq fallback" if config.GEMINI_API_KEY else "Groq"
         except Exception:
+            GROQ_STATUS = "Unavailable" if config.GROQ_API_KEY else "No API key"
             logger.exception("Groq request failed")
 
     if not response_text:

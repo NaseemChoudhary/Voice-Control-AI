@@ -5,12 +5,16 @@ import logging
 import config
 
 logger = logging.getLogger(__name__)
+SPEECH_STATUS = "Not tested" if config.SPEECH_ENABLED else "Disabled"
 _engine = None
 
 
 def speak(text):
     """Speak text, logging speech engine failures without interrupting commands."""
-    global _engine
+    global _engine, SPEECH_STATUS
+    if not config.SPEECH_ENABLED:
+        SPEECH_STATUS = "Disabled"
+        return
     try:
         import pyttsx3
 
@@ -20,5 +24,7 @@ def speak(text):
         _engine.setProperty("volume", config.SPEECH_VOLUME)
         _engine.say(str(text))
         _engine.runAndWait()
+        SPEECH_STATUS = "Ready"
     except Exception:
+        SPEECH_STATUS = "Unavailable"
         logger.exception("Speech output failed")

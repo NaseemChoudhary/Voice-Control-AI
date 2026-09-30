@@ -99,7 +99,7 @@ The desktop dashboard opens with live conversation and service status. Use the c
 
 ### Dashboard settings
 
-The Settings page lets you select model names, default weather city, microphone index, speech rate, speech volume, and spoken response output. API keys remain in `.env`. Dashboard activity is stored under `data/`.
+The Settings page lets you select model names, default weather city, microphone index, speech rate, speech volume, and spoken response output. Use the masthead button to switch between dark and light themes; the choice is saved for next launch. API keys remain in `.env`. Dashboard activity is stored under `data/`.
 
 ### Example Commands
 

@@ -5,6 +5,7 @@ import requests
 import config
 
 logger = logging.getLogger(__name__)
+WEATHER_STATUS = "Not tested" if config.WEATHER_API_KEY else "No API key"
 
 
 def extract_city(command):
@@ -34,7 +35,9 @@ def extract_city(command):
 
 def get_weather(command):
     """Fetch and announce weather for the given command."""
+    global WEATHER_STATUS
     if not config.WEATHER_API_KEY:
+        WEATHER_STATUS = "No API key"
         logger.error("Weather lookup requested but WEATHER_API_KEY is not configured")
         return "Weather API key is missing."
 
@@ -54,6 +57,7 @@ def get_weather(command):
         data = response.json()
 
         if not isinstance(data, dict) or "error" in data:
+            WEATHER_STATUS = "Unavailable"
             logger.info("Weather service returned no result for city %s", city)
             return f"Sorry, I couldn't find weather information for {city}."
 
@@ -81,6 +85,7 @@ def get_weather(command):
         else:
             temp_message = ""
 
+        WEATHER_STATUS = "Online"
         message = (
             f"The temperature in {location['name']} is "
             f"{temperature} degrees Celsius. "
@@ -92,5 +97,6 @@ def get_weather(command):
         return message
 
     except (requests.RequestException, ValueError, KeyError, IndexError, TypeError):
+        WEATHER_STATUS = "Unavailable"
         logger.exception("Could not fetch or parse weather for %s", city)
         return "Sorry, I couldn't fetch the weather right now."

@@ -42,6 +42,9 @@ SPEECH_ENGINE = os.getenv("SPEECH_ENGINE", "espeak")
 SPEECH_RATE = int(_setting("speech_rate", os.getenv("SPEECH_RATE", "170")))
 SPEECH_VOLUME = float(_setting("speech_volume", os.getenv("SPEECH_VOLUME", "1.0")))
 SPEECH_ENABLED = bool(_setting("speech_enabled", True))
+THEME = str(_setting("theme", "dark")).lower()
+if THEME not in {"dark", "light"}:
+    THEME = "dark"
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 
@@ -58,8 +61,9 @@ def save_settings(settings):
     """Persist UI-editable settings and update the active configuration."""
     global GEMINI_MODEL, GROQ_MODEL, DEFAULT_CITY, MICROPHONE_INDEX
     global SPEECH_RATE, SPEECH_VOLUME, SPEECH_ENABLED, _saved_settings
+    global THEME
     allowed = {"gemini_model", "groq_model", "default_city", "microphone_index",
-               "speech_rate", "speech_volume", "speech_enabled"}
+               "speech_rate", "speech_volume", "speech_enabled", "theme"}
     updated = {key: value for key, value in settings.items() if key in allowed}
     merged = {**_saved_settings, **updated}
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -75,6 +79,9 @@ def save_settings(settings):
     SPEECH_RATE = int(merged.get("speech_rate", SPEECH_RATE))
     SPEECH_VOLUME = float(merged.get("speech_volume", SPEECH_VOLUME))
     SPEECH_ENABLED = bool(merged.get("speech_enabled", SPEECH_ENABLED))
+    THEME = str(merged.get("theme", THEME)).lower()
+    if THEME not in {"dark", "light"}:
+        THEME = "dark"
 
 
 def current_settings():
@@ -82,5 +89,5 @@ def current_settings():
         "gemini_model": GEMINI_MODEL, "groq_model": GROQ_MODEL,
         "default_city": DEFAULT_CITY, "microphone_index": MICROPHONE_INDEX,
         "speech_rate": SPEECH_RATE, "speech_volume": SPEECH_VOLUME,
-        "speech_enabled": SPEECH_ENABLED,
+        "speech_enabled": SPEECH_ENABLED, "theme": THEME,
     }

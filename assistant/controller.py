@@ -6,6 +6,9 @@ import threading
 from datetime import datetime, timezone
 
 import config
+from ai import provider
+from commands import weather
+from voice import speaker
 from assistant.router import route_command
 from assistant.intent import classify
 from voice.listener import listen, setup_microphone
@@ -55,9 +58,12 @@ class AssistantController:
             return
         with self._command_lock:
             self._emit("message", role="user", text=command, time=_timestamp())
-            self._emit("status", text="Working…")
+            self._emit("status", text="Thinking…")
+            self._emit("assistant_state", state="processing")
+            keep_running = True
             try:
-                if classify(command) == "new_chat":
+                intent = classify(command)
+                if intent == "new_chat":
                     self._emit("clear_conversation")
                 handled, message, keep_running = route_command(command)
                 if not handled:
@@ -65,13 +71,24 @@ class AssistantController:
                 message = message or "Done."
             except Exception:
                 logger.exception("Command handling failed")
+                intent = locals().get("intent", "")
                 message = "Sorry, I couldn't complete that command."
-                keep_running = True
-            self._emit("message", role="assistant", text=message, time=_timestamp())
+
+            active_provider = provider.ACTIVE_PROVIDER if intent == "ai" else None
+            if intent == "ai":
+                self._emit("provider", name=active_provider or "Unavailable")
+            is_ai_unavailable = intent == "ai" and active_provider is None
+            is_error = is_ai_unavailable or message.lower().startswith("sorry") or "API key is missing" in message
+            role = "error" if is_error else "assistant"
+            details = "Both AI providers failed. Check the connection and API keys." if is_ai_unavailable else None
+            self._emit("message", role=role, text=message, time=_timestamp(),
+                       provider=active_provider, details=details)
             self._record_activity(command, message, kind=source)
-            self._emit("status", text="Ready" if keep_running else "Shutting down")
             if source == "voice" and config.SPEECH_ENABLED:
+                self._emit("assistant_state", state="speaking")
                 speak(message)
+            self._emit("assistant_state", state="error" if is_error else "ready")
+            self._emit("status", text="Service unavailable" if is_error else ("Ready" if keep_running else "Shutting down"))
             return keep_running
 
     def start_voice(self):
@@ -96,14 +113,17 @@ class AssistantController:
         if microphone is None:
             MICROPHONE_STATUS = "Unavailable"
             self._emit("diagnostic", key="Microphone", value=MICROPHONE_STATUS)
+            self._emit("assistant_state", state="error", detail="microphone")
             self._emit("status", text="Microphone unavailable")
             return
         self.voice_active = True
         MICROPHONE_STATUS = "Ready"
         self._emit("voice", active=True)
         self._emit("diagnostic", key="Microphone", value=MICROPHONE_STATUS)
+        self._emit("assistant_state", state="listening")
         self._emit("status", text="Listening for “Jarvis”")
         while not self._stop.is_set():
+            self._emit("assistant_state", state="listening")
             phrase = listen(microphone, timeout=3, phrase_time_limit=7)
             if not phrase:
                 continue
@@ -138,10 +158,12 @@ class AssistantController:
         except OSError:
             history_state = "Could not read history"
         return {
-            "Gemini": "Configured" if config.GEMINI_API_KEY else "No API key",
-            "Groq fallback": "Configured" if config.GROQ_API_KEY else "No API key",
-            "Weather API": "Configured" if config.WEATHER_API_KEY else "No API key",
             "Microphone": MICROPHONE_STATUS if config.MICROPHONE_INDEX >= 0 else "Not configured",
+            "Internet": provider.NETWORK_STATUS,
+            "Gemini": provider.GEMINI_STATUS,
+            "Groq": provider.GROQ_STATUS,
+            "Weather API": weather.WEATHER_STATUS,
+            "Speech Output": speaker.SPEECH_STATUS,
+            "Conversation Memory": "Active" if history_state.startswith("Available") else "Ready",
             "Conversation store": history_state,
-            "Speech output": "Enabled" if config.SPEECH_ENABLED else "Disabled",
         }
