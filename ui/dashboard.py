@@ -744,9 +744,12 @@ class JarvisDashboard:
         diag.pack(fill="x", padx=32, pady=(0, 20))
         services = tk.Frame(diag, bg="#0c1a2b")
         services.pack(fill="x", padx=20, pady=(0, 17))
+        self.settings_diag_labels = {}
         for idx, (name, state) in enumerate(AssistantController.diagnostics().items()):
-            tk.Label(services, text=f"{name}   ·   {state}", bg="#0c1a2b", fg=TEXT,
-                     font=("TkDefaultFont", 9)).grid(row=idx // 3, column=idx % 3, sticky="w", padx=10, pady=8)
+            label = tk.Label(services, text=f"{name}   ·   {state}", bg="#0c1a2b", fg=TEXT,
+                             font=("TkDefaultFont", 9))
+            label.grid(row=idx // 3, column=idx % 3, sticky="w", padx=10, pady=8)
+            self.settings_diag_labels[name] = label
 
     def _save_settings(self):
         try:
@@ -812,11 +815,18 @@ class JarvisDashboard:
             dot.configure(fg=color)
 
     def _refresh_diagnostics(self, schedule=True):
-        if hasattr(self, "diag_labels"):
-            for name, value in AssistantController.diagnostics().items():
-                label = self.diag_labels.get(name)
+        diagnostics = AssistantController.diagnostics()
+        for labels, settings_page in (
+            (getattr(self, "diag_labels", {}), False),
+            (getattr(self, "settings_diag_labels", {}), True),
+        ):
+            for name, value in diagnostics.items():
+                label = labels.get(name)
                 if label and label.winfo_exists():
-                    self._style_diagnostic(name, value)
+                    if settings_page:
+                        label.configure(text=f"{name}   ·   {value}", fg=self._diagnostic_color(value))
+                    else:
+                        self._style_diagnostic(name, value)
         if schedule:
             self.root.after(5000, self._refresh_diagnostics)
 
@@ -870,6 +880,8 @@ class JarvisDashboard:
                     self.messages.append(event)
                     self.messages = self.messages[-300:]
                     self._render_messages()
+                elif kind == "transcription":
+                    self.command_var.set(event.get("text", ""))
                 elif kind == "status":
                     if hasattr(self, "listening_label") and self.listening_label.winfo_exists():
                         self.listening_label.configure(text=event.get("text", "Ready").upper())
@@ -893,8 +905,7 @@ class JarvisDashboard:
                         self.voice_circle.itemconfigure("ring", outline="#28f1ff" if active else "#00c9ff")
                         self.voice_circle.itemconfigure("mic", fill="#bafaff" if active else "#66eaff")
                 elif kind == "diagnostic":
-                    label = getattr(self, "diag_labels", {}).get(event.get("key"))
-                    self._style_diagnostic(event.get("key"), event.get("value", "Unknown"))
+                    self._refresh_diagnostics(schedule=False)
                 elif kind == "activity":
                     self._refresh_recent_activity()
                     self._populate_history()

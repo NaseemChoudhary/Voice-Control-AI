@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import config
 from ai import provider
 from commands import weather
-from voice import speaker
+from voice import listener, speaker
 from assistant.router import route_command
 from assistant.intent import classify
 from voice.listener import listen, setup_microphone
@@ -84,7 +84,7 @@ class AssistantController:
             self._emit("message", role=role, text=message, time=_timestamp(),
                        provider=active_provider, details=details)
             self._record_activity(command, message, kind=source)
-            if source == "voice" and config.SPEECH_ENABLED:
+            if source in {"voice", "dashboard"} and config.SPEECH_ENABLED:
                 self._emit("assistant_state", state="speaking")
                 speak(message)
             self._emit("assistant_state", state="error" if is_error else "ready")
@@ -122,13 +122,18 @@ class AssistantController:
         self._emit("diagnostic", key="Microphone", value=MICROPHONE_STATUS)
         self._emit("assistant_state", state="listening")
         self._emit("status", text="Listening for “Jarvis”")
+        recognition_status = None
         while not self._stop.is_set():
             self._emit("assistant_state", state="listening")
             phrase = listen(microphone, timeout=3, phrase_time_limit=7)
+            if listener.RECOGNITION_STATUS != recognition_status:
+                recognition_status = listener.RECOGNITION_STATUS
+                self._emit("diagnostic", key="Speech Recognition", value=recognition_status)
             if not phrase:
                 continue
             normalized = phrase.lower().strip()
             if normalized == "shutdown" or normalized.endswith(" shutdown"):
+                self._emit("transcription", text=normalized)
                 self.execute("shutdown", source="voice")
                 self._stop.set()
                 break
@@ -139,6 +144,7 @@ class AssistantController:
                 self._emit("status", text="Listening for your command")
                 command = listen(microphone, timeout=8, phrase_time_limit=10)
             if command:
+                self._emit("transcription", text=command)
                 if self.execute(command, source="voice") is False:
                     self._stop.set()
                     break
@@ -159,11 +165,12 @@ class AssistantController:
             history_state = "Could not read history"
         return {
             "Microphone": MICROPHONE_STATUS if config.MICROPHONE_INDEX >= 0 else "Not configured",
+            "Speech Recognition": listener.RECOGNITION_STATUS,
+            "Speech Output": "Disabled" if not config.SPEECH_ENABLED else speaker.SPEECH_STATUS,
             "Internet": provider.NETWORK_STATUS,
             "Gemini": provider.GEMINI_STATUS,
             "Groq": provider.GROQ_STATUS,
             "Weather API": weather.WEATHER_STATUS,
-            "Speech Output": speaker.SPEECH_STATUS,
             "Conversation Memory": "Active" if history_state.startswith("Available") else "Ready",
             "Conversation store": history_state,
         }

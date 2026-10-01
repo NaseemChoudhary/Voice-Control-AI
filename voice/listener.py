@@ -7,6 +7,7 @@ recognizer = sr.Recognizer()
 
 
 logger = logging.getLogger(__name__)
+RECOGNITION_STATUS = "Not tested"
 
 
 def setup_microphone():
@@ -40,7 +41,7 @@ def setup_microphone():
 
 def listen(mic, timeout=15, phrase_time_limit=5):
     """Listen to microphone and return recognized speech."""
-
+    global RECOGNITION_STATUS
     try:
         with mic as source:
             logger.debug("Listening for speech")
@@ -59,7 +60,7 @@ def listen(mic, timeout=15, phrase_time_limit=5):
         )
 
         logger.info("Recognized user speech")
-
+        RECOGNITION_STATUS = "Ready"
         return text.lower()
 
     except sr.WaitTimeoutError:
@@ -67,10 +68,13 @@ def listen(mic, timeout=15, phrase_time_limit=5):
         return None
     except sr.UnknownValueError:
         logger.info("Speech could not be understood")
+        RECOGNITION_STATUS = "Ready"
         return None
     except sr.RequestError:
+        RECOGNITION_STATUS = "Unavailable"
         logger.exception("Speech recognition service request failed")
         return None
     except Exception:
+        RECOGNITION_STATUS = "Unavailable"
         logger.exception("Unexpected speech recognition failure")
         return None

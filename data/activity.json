@@ -46,5 +46,83 @@
     "kind": "voice",
     "command": "lesan",
     "result": "Sorry, all AI services are currently unavailable."
+  },
+  {
+    "time": "2026-10-01T10:53:12+05:30",
+    "kind": "voice",
+    "command": "open google",
+    "result": "Opening Google."
+  },
+  {
+    "time": "2026-10-01T10:53:56+05:30",
+    "kind": "voice",
+    "command": "tell me about computer",
+    "result": "A computer is an electronic device that inputs, stores, processes, and outputs data. It combines **hardware** (physical components like the CPU, memory, and screen) with **software** (programs and operating systems) to perform a wide variety of tasks, from simple calculations to browsing the internet and running complex applications."
+  },
+  {
+    "time": "2026-10-01T11:06:46+05:30",
+    "kind": "voice",
+    "command": "jar",
+    "result": "A **jar** has three primary meanings:\n\n1. **Container:** A wide-mouthed, cylindrical vessel (usually glass) used for storing food or liquids.\n2. **Technology (JAR):** A Java Archive file format used to aggregate and distribute Java applications.\n3. **Action:** To shake, clash, or cause a harsh, unpleasant physical or emotional shock."
+  },
+  {
+    "time": "2026-10-01T11:07:17+05:30",
+    "kind": "dashboard",
+    "command": "new chat",
+    "result": "Conversation cleared."
+  },
+  {
+    "time": "2026-10-01T11:14:07+05:30",
+    "kind": "voice",
+    "command": "open google",
+    "result": "Opening Google."
+  },
+  {
+    "time": "2026-10-01T11:15:20+05:30",
+    "kind": "voice",
+    "command": "open google",
+    "result": "Opening Google."
+  },
+  {
+    "time": "2026-10-01T11:18:58+05:30",
+    "kind": "voice",
+    "command": "open google  open google",
+    "result": "Opening Google."
+  },
+  {
+    "time": "2026-10-01T11:19:19+05:30",
+    "kind": "voice",
+    "command": "play music",
+    "result": "Playing music on YouTube."
+  },
+  {
+    "time": "2026-10-01T11:20:25+05:30",
+    "kind": "voice",
+    "command": "accenture",
+    "result": "Sorry, all AI services are currently unavailable."
+  },
+  {
+    "time": "2026-10-01T13:07:46+05:30",
+    "kind": "voice",
+    "command": "open google",
+    "result": "Opening Google."
+  },
+  {
+    "time": "2026-10-01T13:11:58+05:30",
+    "kind": "dashboard",
+    "command": "open google",
+    "result": "Opening Google."
+  },
+  {
+    "time": "2026-10-01T13:14:25+05:30",
+    "kind": "dashboard",
+    "command": "play 500 miles",
+    "result": "Playing 500 miles on YouTube."
+  },
+  {
+    "time": "2026-10-01T13:18:52+05:30",
+    "kind": "dashboard",
+    "command": "what is quantum computing",
+    "result": "**Quantum computing** is a rapidly emerging technology that harnesses the laws of quantum mechanics to solve complex problems too difficult for traditional supercomputers. \n\nUnlike classical computers, which process information using **bits** (representing either a `0` or a `1`), quantum computers use **qubits** (quantum bits). Qubits rely on two key quantum principles:\n* **Superposition:** The ability to exist in multiple states (both `0` and `1` simultaneously), allowing the computer to evaluate millions of possibilities at once.\n* **Entanglement:** A connection where the state of one qubit instantaneously influences another, dramatically speeding up processing power.\n\nThis allows quantum computers to perform highly complex calculations in minutes that would take classical computers thousands of years, with major applications in medicine, cryptography, finance, and artificial intelligence."
   }
 ]

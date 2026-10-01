@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>J.A.R.V.I.S. Dashboard</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --cyan: #00c8ff;
+    --blue: #0879ad;
+    --dark: #020910;
+    --panel: rgba(3, 22, 36, .88);
+    --panel2: rgba(5, 30, 48, .72);
+    --text: #d9f3ff;
+    --muted: #73a9c9;
+    --green: #00f0a0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    color: var(--text);
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(0, 112, 170, .20),
+            transparent 38%
+        ),
+        radial-gradient(
+            circle at 15% 80%,
+            rgba(0, 155, 220, .08),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #01050a,
+            #03121e 45%,
+            #01070c
+        );
+}
+
+/* HUD GRID */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            rgba(0, 190, 255, .025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(0, 190, 255, .025) 1px,
+            transparent 1px
+        );
+
+    background-size: 45px 45px;
+}
+
+/* MAIN FRAME */
+
+.jarvis {
+    width: 97%;
+    max-width: 1700px;
+    min-height: 1100px;
+
+    margin: 18px auto;
+
+    border: 1px solid rgba(0, 200, 255, .75);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(2, 17, 29, .96),
+            rgba(1, 9, 16, .97)
+        );
+
+    box-shadow:
+        0 0 25px rgba(0, 180, 255, .15),
+        inset 0 0 80px rgba(0, 140, 210, .05);
+
+    clip-path: polygon(
+        20px 0,
+        calc(100% - 20px) 0,
+        100% 20px,
+        100% calc(100% - 20px),
+        calc(100% - 20px) 100%,
+        20px 100%,
+        0 calc(100% - 20px),
+        0 20px
+    );
+}
+
+/* HEADER */
+
+.header {
+    min-height: 125px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px 30px;
+
+    border-bottom: 1px solid rgba(0, 190, 255, .55);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+/* ARC REACTOR */
+
+.reactor {
+    width: 85px;
+    height: 85px;
+
+    position: relative;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--cyan);
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 15px var(--cyan),
+        0 0 40px rgba(0, 200, 255, .3);
+}
+
+.reactor::before {
+    content: "";
+
+    position: absolute;
+    inset: 9px;
+
+    border: 2px solid #19cfff;
+    border-radius: 50%;
+}
+
+.reactor::after {
+    content: "";
+
+    position: absolute;
+    inset: 18px;
+
+    border: 7px dotted #9ceeff;
+    border-radius: 50%;
+}
+
+.core {
+    width: 31px;
+    height: 31px;
+
+    border-radius: 50%;
+
+    background: #e9fcff;
+
+    box-shadow:
+        0 0 10px white,
+        0 0 25px var(--cyan),
+        0 0 45px var(--cyan);
+}
+
+.title {
+    font-size: clamp(28px, 3vw, 43px);
+    letter-spacing: 13px;
+    font-weight: 600;
+
+    color: #d7f2ff;
+
+    text-shadow: 0 0 15px rgba(0, 200, 255, .5);
+}
+
+.subtitle {
+    margin-top: 8px;
+
+    color: #4caedb;
+
+    font-size: 14px;
+    letter-spacing: 6px;
+}
+
+.clock {
+    min-width: 350px;
+
+    padding: 13px 25px;
+
+    border-left: 1px solid var(--cyan);
+    border-bottom: 1px solid var(--cyan);
+
+    background: rgba(2, 25, 40, .65);
+}
+
+.date {
+    color: #83b8d7;
+    font-size: 16px;
+}
+
+.time {
+    margin-top: 5px;
+
+    color: #bfe8ff;
+
+    font-size: 35px;
+    letter-spacing: 2px;
+}
+
+/* BODY */
+
+.layout {
+    display: grid;
+    grid-template-columns: 245px minmax(500px, 1fr) 360px;
+
+    min-height: 970px;
+}
+
+/* LEFT */
+
+.sidebar {
+    padding: 15px;
+
+    border-right: 1px solid rgba(0, 190, 255, .45);
+}
+
+.nav-item {
+    height: 58px;
+
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    padding: 0 20px;
+
+    border-bottom: 1px solid rgba(0, 160, 220, .13);
+
+    color: #a9d8f4;
+
+    font-size: 17px;
+}
+
+.nav-item.active {
+    color: #00d9ff;
+
+    border: 1px solid #00c8ff;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 190, 255, .18),
+            rgba(0, 100, 150, .05)
+        );
+
+    box-shadow:
+        inset 3px 0 #00c8ff,
+        0 0 15px rgba(0, 190, 255, .12);
+}
+
+.icon {
+    width: 25px;
+
+    color: #8ddcff;
+
+    text-align: center;
+    font-size: 21px;
+}
+
+.sidebar-bottom {
+    margin-top: 160px;
+}
+
+.small-card {
+    margin-top: 10px;
+
+    padding: 13px;
+
+    border: 1px solid rgba(0, 180, 240, .4);
+
+    background: rgba(2, 18, 30, .8);
+}
+
+.small-title {
+    color: #529ac0;
+    font-size: 13px;
+}
+
+.small-value {
+    margin-top: 5px;
+    font-size: 15px;
+}
+
+.dot {
+    float: right;
+
+    width: 9px;
+    height: 9px;
+
+    margin-top: 5px;
+
+    border-radius: 50%;
+
+    background: var(--green);
+
+    box-shadow: 0 0 10px var(--green);
+}
+
+/* CENTER */
+
+.center {
+    padding: 28px 20px;
+}
+
+.conversation {
+    max-width: 800px;
+    margin: auto;
+}
+
+.message {
+    display: flex;
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 65px;
+    height: 65px;
+
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    border: 1px solid #299bd7;
+
+    background:
+        radial-gradient(
+            circle,
+            #d8f5ff 0 18%,
+            #4b91c5 19% 45%,
+            #06243a 46%
+        );
+
+    box-shadow: 0 0 18px rgba(0, 170, 255, .3);
+
+    font-size: 25px;
+}
+
+.jarvis-avatar {
+    background:
+        radial-gradient(
+            circle,
+            white 0 12%,
+            #00bfff 13% 30%,
+            #031b2c 31% 48%,
+            #00c8ff 49% 53%,
+            #03111d 54%
+        );
+}
+
+.bubble {
+    flex: 1;
+
+    padding: 17px 21px;
+
+    border: 1px solid rgba(0, 150, 215, .35);
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(5, 31, 49, .95),
+            rgba(3, 18, 30, .92)
+        );
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+
+    margin-bottom: 8px;
+
+    color: #73c8f3;
+
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.message-time {
+    color: #5086a5;
+
+    font-size: 13px;
+    font-weight: normal;
+}
+
+.message-text {
+    color: #e0f3ff;
+
+    font-size: 18px;
+    line-height: 1.55;
+}
+
+/* WEATHER */
+
+.weather-card {
+    margin-top: 18px;
+
+    padding: 18px;
+
+    border: 1px solid #098ac6;
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(8, 52, 77, .9),
+            rgba(5, 28, 45, .85)
+        );
+
+    box-shadow:
+        inset 0 0 30px rgba(0, 160, 230, .08);
+}
+
+.location {
+    font-size: 23px;
+    font-weight: 600;
+}
+
+.weather-date {
+    margin-top: 3px;
+
+    color: #8bbbd7;
+}
+
+.weather-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1.3fr;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 20px;
+}
+
+.weather-icon {
+    font-size: 78px;
+    text-align: center;
+}
+
+.temperature {
+    font-size: 52px;
+    font-weight: 600;
+}
+
+.temperature span {
+    font-size: 25px;
+}
+
+.low {
+    color: #7eb6d6;
+    font-size: 21px;
+}
+
+.condition {
+    margin-top: 10px;
+
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.advice {
+    margin-top: 9px;
+
+    color: #8fc3e2;
+}
+
+.stats {
+    padding: 10px 15px;
+
+    border-radius: 12px;
+
+    background: rgba(0, 13, 24, .55);
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid rgba(130, 200, 230, .12);
+}
+
+.stat:last-child {
+    border: none;
+}
+
+.stat-value {
+    color: #a0ddff;
+}
+
+/* QUICK BUTTONS */
+
+.quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-top: 13px;
+}
+
+.quick span {
+    padding: 9px 16px;
+
+    border: 1px solid #087bad;
+    border-radius: 20px;
+
+    color: #c7ecff;
+
+    background: rgba(3, 27, 43, .8);
+}
+
+/* LISTENING */
+
+.listening {
+    margin-top: 80px;
+
+    text-align: center;
+}
+
+.voice-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 25px;
+}
+
+.circle {
+    width: 58px;
+    height: 58px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--cyan);
+    border-radius: 50%;
+
+    background: rgba(0, 25, 40, .8);
+
+    font-size: 24px;
+}
+
+.wave {
+    display: flex;
+    align-items: center;
+
+    gap: 4px;
+
+    height: 60px;
+}
+
+.wave i {
+    display: block;
+
+    width: 3px;
+    height: 22px;
+
+    background: var(--cyan);
+
+    box-shadow: 0 0 8px var(--cyan);
+}
+
+.wave i:nth-child(2),
+.wave i:nth-child(8) {
+    height: 32px;
+}
+
+.wave i:nth-child(3),
+.wave i:nth-child(7) {
+    height: 42px;
+}
+
+.wave i:nth-child(4),
+.wave i:nth-child(6) {
+    height: 28px;
+}
+
+.wave i:nth-child(5) {
+    height: 50px;
+}
+
+.mic {
+    width: 115px;
+    height: 115px;
+
+    display: grid;
+    place-items: center;
+
+    border: 3px solid var(--cyan);
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 180, 240, .2),
+            rgba(0, 15, 27, .8)
+        );
+
+    color: #00d9ff;
+
+    font-size: 42px;
+
+    box-shadow:
+        0 0 20px var(--cyan),
+        0 0 50px rgba(0, 190, 255, .3);
+}
+
+.listening-text {
+    margin-top: 10px;
+
+    font-size: 23px;
+}
+
+.wake {
+    margin-top: 5px;
+
+    color: #58b7e5;
+}
+
+/* RIGHT */
+
+.right {
+    padding: 14px 14px 20px 0;
+}
+
+.panel {
+    margin-bottom: 18px;
+
+    border: 1px solid rgba(0, 180, 240, .55);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(4, 28, 44, .9),
+            rgba(1, 13, 22, .94)
+        );
+}
+
+.panel-title {
+    padding: 15px 18px;
+
+    color: #00ccff;
+
+    border-bottom: 1px solid rgba(0, 180, 240, .16);
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.online {
+    float: right;
+
+    color: var(--green);
+
+    font-weight: 400;
+}
+
+.system-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+
+    align-items: center;
+
+    min-height: 42px;
+
+    padding: 0 18px;
+
+    border-bottom: 1px solid rgba(0, 160, 220, .1);
+
+    font-size: 14px;
+}
+
+.status {
+    color: var(--green);
+}
+
+.command {
+    display: grid;
+    grid-template-columns: 35px 65px 1fr;
+
+    gap: 5px;
+
+    padding: 12px 17px;
+
+    border-bottom: 1px solid rgba(0, 160, 220, .1);
+
+    font-size: 13px;
+}
+
+.command-text {
+    color: #70a8c8;
+}
+
+.activity {
+    display: grid;
+    grid-template-columns: 35px 1fr auto;
+
+    gap: 5px;
+
+    padding: 12px 17px;
+
+    border-bottom: 1px solid rgba(0, 160, 220, .1);
+
+    font-size: 13px;
+}
+
+.activity-time {
+    color: #6aa7ca;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1200px) {
+
+    .layout {
+        grid-template-columns: 210px 1fr;
+    }
+
+    .right {
+        display: none;
+    }
+
+    .clock {
+        min-width: 280px;
+    }
+}
+
+@media (max-width: 800px) {
+
+    .jarvis {
+        width: 100%;
+        margin: 0;
+
+        clip-path: none;
+    }
+
+    .header {
+        padding: 20px;
+    }
+
+    .clock {
+        display: none;
+    }
+
+    .title {
+        font-size: 25px;
+        letter-spacing: 7px;
+    }
+
+    .subtitle {
+        font-size: 10px;
+        letter-spacing: 3px;
+    }
+
+    .reactor {
+        width: 65px;
+        height: 65px;
+    }
+
+    .layout {
+        display: block;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .center {
+        padding: 20px 12px;
+    }
+
+    .weather-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .weather-icon {
+        font-size: 65px;
+    }
+
+    .voice-line {
+        gap: 8px;
+    }
+
+    .wave {
+        display: none;
+    }
+
+    .mic {
+        width: 95px;
+        height: 95px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="jarvis">
+
+    <!-- HEADER -->
+    <header class="header">
+
+        <div class="brand">
+
+            <div class="reactor">
+                <div class="core"></div>
+            </div>
+
+            <div>
+                <div class="title">J.A.R.V.I.S.</div>
+
+                <div class="subtitle">
+                    YOUR PERSONAL AI ASSISTANT
+                </div>
+            </div>
+
+        </div>
+
+        <div class="clock">
+
+            <div class="date">
+                Sun, 24 Aug 2025
+            </div>
+
+            <div class="time">
+                09:42 PM
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <div class="layout">
+
+        <!-- LEFT SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="nav-item active">
+                <span class="icon">⌂</span>
+                Home
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">▣</span>
+                Chat
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">♩</span>
+                Voice
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">☁</span>
+                Weather
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">▤</span>
+                News
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">▶</span>
+                YouTube
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">⌕</span>
+                Web Search
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">▦</span>
+                Apps
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">⚙</span>
+                System
+            </div>
+
+            <div class="nav-item">
+                <span class="icon">◉</span>
+                Settings
+            </div>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="small-card">
+
+                    <span class="dot"></span>
+
+                    <div class="small-title">
+                        AI Provider
+                    </div>
+
+                    <div class="small-value">
+                        Gemini
+                    </div>
+
+                </div>
+
+                <div class="small-card">
+
+                    <span class="dot"></span>
+
+                    <div class="small-title">
+                        Conversation Memory
+                    </div>
+
+                    <div class="small-value">
+                        Active
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- CENTER -->
+
+        <main class="center">
+
+            <div class="conversation">
+
+                <!-- USER -->
+
+                <div class="message">
+
+                    <div class="avatar">
+                        👤
+                    </div>
+
+                    <div class="bubble">
+
+                        <div class="message-header">
+                            You
+
+                            <span class="message-time">
+                                09:42 PM
+                            </span>
+                        </div>
+
+                        <div class="message-text">
+                            what's the weather tomorrow in mumbai?
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- JARVIS -->
+
+                <div class="message">
+
+                    <div class="avatar jarvis-avatar">
+                        ✦
+                    </div>
+
+                    <div class="bubble">
+
+                        <div class="message-header">
+                            JARVIS
+
+                            <span class="message-time">
+                                09:42 PM
+                            </span>
+                        </div>
+
+                        <div class="message-text">
+
+                            Tomorrow in Mumbai, it will be partly cloudy
+                            with a high temperature of 31°C and a low of
+                            26°C. There is a moderate chance of rain,
+                            around 40%, so you might want to carry an
+                            umbrella just in case.
+
+                        </div>
+
+
+                        <!-- WEATHER CARD -->
+
+                        <div class="weather-card">
+
+                            <div class="location">
+                                📍 Mumbai
+                            </div>
+
+                            <div class="weather-date">
+                                Tomorrow, 25 Aug 2025
+                            </div>
+
+
+                            <div class="weather-grid">
+
+                                <div class="weather-icon">
+                                    🌤️
+                                </div>
+
+
+                                <div>
+
+                                    <div class="temperature">
+                                        31<span>°C</span>
+                                    </div>
+
+                                    <div class="low">
+                                        26°C
+                                    </div>
+
+                                    <div class="condition">
+                                        Partly Cloudy
+                                    </div>
+
+                                    <div class="advice">
+                                        Moderate chance of rain
+                                    </div>
+
+                                </div>
+
+
+                                <div class="stats">
+
+                                    <div class="stat">
+                                        <span>♨ High</span>
+                                        <span class="stat-value">
+                                            31°C
+                                        </span>
+                                    </div>
+
+                                    <div class="stat">
+                                        <span>♨ Low</span>
+                                        <span class="stat-value">
+                                            26°C
+                                        </span>
+                                    </div>
+
+                                    <div class="stat">
+                                        <span>☁ Chance of Rain</span>
+                                        <span class="stat-value">
+                                            40%
+                                        </span>
+                                    </div>
+
+                                    <div class="stat">
+                                        <span>≋ Wind</span>
+                                        <span class="stat-value">
+                                            14 km/h
+                                        </span>
+                                    </div>
+
+                                    <div class="stat">
+                                        <span>💧 Humidity</span>
+                                        <span class="stat-value">
+                                            78%
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- QUICK COMMANDS -->
+
+                <div class="quick">
+
+                    <span>Show today's weather</span>
+
+                    <span>Will it rain heavily?</span>
+
+                    <span>7 day forecast</span>
+
+                    <span>Weather in another city</span>
+
+                </div>
+
+
+                <!-- LISTENING -->
+
+                <div class="listening">
+
+                    <div class="voice-line">
+
+                        <div class="circle">
+                            🔊
+                        </div>
+
+                        <div class="wave">
+                            <i></i><i></i><i></i><i></i><i></i>
+                            <i></i><i></i><i></i><i></i>
+                        </div>
+
+                        <div class="mic">
+                            🎙
+                        </div>
+
+                        <div class="wave">
+                            <i></i><i></i><i></i><i></i><i></i>
+                            <i></i><i></i><i></i><i></i>
+                        </div>
+
+                        <div class="circle">
+                            ⌨
+                        </div>
+
+                    </div>
+
+                    <div class="listening-text">
+                        Listening...
+                    </div>
+
+                    <div class="wake">
+                        Say "Jarvis" to give a command
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+
+        <!-- RIGHT -->
+
+        <aside class="right">
+
+            <!-- SYSTEM STATUS -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+
+                    SYSTEM STATUS
+
+                    <span class="online">
+                        ● All Systems Online
+                    </span>
+
+                </div>
+
+                <div class="system-row">
+                    <span>🎙</span>
+                    <span>Microphone</span>
+                    <span class="status">Active</span>
+                </div>
+
+                <div class="system-row">
+                    <span>⌁</span>
+                    <span>Internet</span>
+                    <span class="status">Connected</span>
+                </div>
+
+                <div class="system-row">
+                    <span>✧</span>
+                    <span>AI (Gemini)</span>
+                    <span class="status">Online</span>
+                </div>
+
+                <div class="system-row">
+                    <span>◈</span>
+                    <span>AI (Groq - Backup)</span>
+                    <span class="status">Ready</span>
+                </div>
+
+                <div class="system-row">
+                    <span>☁</span>
+                    <span>Weather API</span>
+                    <span class="status">Online</span>
+                </div>
+
+                <div class="system-row">
+                    <span>▤</span>
+                    <span>News API</span>
+                    <span class="status">Online</span>
+                </div>
+
+                <div class="system-row">
+                    <span>≋</span>
+                    <span>Text Mode</span>
+                    <span class="status">Ready</span>
+                </div>
+
+            </div>
+
+
+            <!-- QUICK COMMANDS -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    ⚡ QUICK COMMANDS
+                </div>
+
+                <div class="command">
+                    <span>☁</span>
+                    <span>Weather</span>
+                    <span class="command-text">
+                        "What's the weather in London?"
+                    </span>
+                </div>
+
+                <div class="command">
+                    <span>▤</span>
+                    <span>News</span>
+                    <span class="command-text">
+                        "Give me the latest news."
+                    </span>
+                </div>
+
+                <div class="command">
+                    <span>▶</span>
+                    <span>YouTube</span>
+                    <span class="command-text">
+                        "Play a song by Queen."
+                    </span>
+                </div>
+
+                <div class="command">
+                    <span>⌕</span>
+                    <span>Search</span>
+                    <span class="command-text">
+                        "Search for AI."
+                    </span>
+                </div>
+
+                <div class="command">
+                    <span>▦</span>
+                    <span>Open App</span>
+                    <span class="command-text">
+                        "Open VS Code."
+                    </span>
+                </div>
+
+                <div class="command">
+                    <span>▣</span>
+                    <span>New Chat</span>
+                    <span class="command-text">
+                        "Start a new conversation."
+                    </span>
+                </div>
+
+            </div>
+
+
+            <!-- RECENT ACTIVITY -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    ◷ RECENT ACTIVITY
+                </div>
+
+                <div class="activity">
+                    <span>🌤️</span>
+                    <span>Weather in Mumbai</span>
+                    <span class="activity-time">
+                        09:42 PM
+                    </span>
+                </div>
+
+                <div class="activity">
+                    <span>▶</span>
+                    <span>Opened YouTube</span>
+                    <span class="activity-time">
+                        09:38 PM
+                    </span>
+                </div>
+
+                <div class="activity">
+                    <span>▣</span>
+                    <span>Asked a question about AI</span>
+                    <span class="activity-time">
+                        09:35 PM
+                    </span>
+                </div>
+
+                <div class="activity">
+                    <span>▤</span>
+                    <span>Checked latest news</span>
+                    <span class="activity-time">
+                        09:30 PM
+                    </span>
+                </div>
+
+                <div class="activity">
+                    <span>✈</span>
+                    <span>Opened VS Code</span>
+                    <span class="activity-time">
+                        09:28 PM
+                    </span>
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+</body>
+</html>

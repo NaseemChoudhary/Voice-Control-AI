@@ -87,10 +87,12 @@ Run the main script to start the assistant:
 python main.py
 ```
 
-To use the terminal interface instead, run:
+To run only in the terminal (without creating the dashboard), use either option.
+Voice listening starts automatically; say “Jarvis” followed by your command, or type one:
 
 ```bash
-python main.py --cli
+python main.py --no-Dashboard
+# or: python main.py --cli
 ```
 
 The legacy text launcher is also kept available with `python TextCommands.py`.

@@ -4,8 +4,12 @@ import argparse
 
 
 def main():
-    parser = argparse.ArgumentParser(description="JARVIS desktop assistant")
-    parser.add_argument("--cli", action="store_true", help="run the terminal interface")
+    parser = argparse.ArgumentParser(description="JARVIS assistant")
+    parser.add_argument(
+        "--cli", "--no-dashboard", "--no-Dashboard",
+        action="store_true",
+        help="run in the terminal without creating the dashboard",
+    )
     args = parser.parse_args()
 
     if args.cli:
